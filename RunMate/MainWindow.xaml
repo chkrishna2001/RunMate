@@ -1,0 +1,192 @@
+﻿<mah:MetroWindow
+    x:Class="RunMate.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+    xmlns:helpers="clr-namespace:RunMate.Helpers"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:vm="clr-namespace:RunMate.ViewModels"
+    Title="RunMate - Command Center"
+    Width="900"
+    Height="600"
+    Dialog:DialogParticipation.Register="{Binding}"
+    BorderThickness="1"
+    GlowBrush="#1E88E5"
+    WindowStartupLocation="CenterScreen">
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel
+            Grid.Column="0"
+            Margin="10"
+            Background="#2D2D30">
+            <!--  🔍 Search Bar  -->
+            <TextBox
+                Margin="0,0,0,10"
+                Background="#1E1E1E"
+                Foreground="White"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+            <!--  📋 Command Grid  -->
+            <DataGrid
+                x:Name="CommandGrid"
+                AutoGenerateColumns="False"
+                Background="#2D2D30"
+                BorderBrush="Transparent"
+                CanUserAddRows="False"
+                CanUserResizeRows="False"
+                EnableRowVirtualization="True"
+                Foreground="White"
+                GridLinesVisibility="None"
+                HeadersVisibility="None"
+                IsReadOnly="True"
+                ItemsSource="{Binding SavedCommands}"
+                RowHeaderWidth="0"
+                RowHeight="40"
+                SelectedItem="{Binding SelectedCommand}"
+                SelectionMode="Single">
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="5,0" LastChildFill="True">
+                                    <!--  🗑️ Delete Icon  -->
+                                    <Button
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.DeleteCommandCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
+                                        CommandParameter="{Binding}"
+                                        DockPanel.Dock="Right"
+                                        ToolTip="Delete">
+                                        <iconPacks:PackIconMaterial
+                                            Width="18"
+                                            Height="18"
+                                            Foreground="Red"
+                                            Kind="TrashCanOutline" />
+                                    </Button>
+
+                                    <!--  ✏️ Pencil Icon  -->
+                                    <Button
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Command="{Binding DataContext.EnableRenameCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
+                                        CommandParameter="{Binding}"
+                                        DockPanel.Dock="Right"
+                                        ToolTip="Rename">
+                                        <iconPacks:PackIconMaterial
+                                            Width="18"
+                                            Height="18"
+                                            Foreground="White"
+                                            Kind="Pencil" />
+                                    </Button>
+
+                                    <!--  Label / Editable Name  -->
+                                    <ContentControl Content="{Binding}">
+                                        <ContentControl.Style>
+                                            <Style TargetType="ContentControl">
+                                                <Setter Property="ContentTemplate">
+                                                    <Setter.Value>
+                                                        <DataTemplate>
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                Foreground="White"
+                                                                Text="{Binding Name}" />
+                                                        </DataTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                                        <Setter Property="ContentTemplate">
+                                                            <Setter.Value>
+                                                                <DataTemplate>
+                                                                    <TextBox
+                                                                        Width="200"
+                                                                        VerticalContentAlignment="Center"
+                                                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                                                        <TextBox.InputBindings>
+                                                                            <KeyBinding
+                                                                                Key="Enter"
+                                                                                Command="{Binding DataContext.CommitRenameCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
+                                                                                CommandParameter="{Binding}" />
+                                                                            <KeyBinding
+                                                                                Key="Escape"
+                                                                                Command="{Binding DataContext.CancelRenameCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
+                                                                                CommandParameter="{Binding}" />
+                                                                        </TextBox.InputBindings>
+                                                                    </TextBox>
+                                                                </DataTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ContentControl.Style>
+                                    </ContentControl>
+                                </DockPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+        </StackPanel>
+
+
+        <!--  Command Panel  -->
+        <StackPanel
+            Grid.Column="1"
+            Margin="15"
+            Background="#1E1E1E">
+            <TextBlock
+                Margin="0,0,0,5"
+                FontWeight="Bold"
+                Foreground="White"
+                Text="Command Input" />
+            <TextBox
+                Height="100"
+                AcceptsReturn="True"
+                Background="#2E2E2E"
+                FontFamily="Consolas"
+                Foreground="White"
+                Text="{Binding Command, UpdateSourceTrigger=PropertyChanged}"
+                TextWrapping="Wrap"
+                VerticalScrollBarVisibility="Auto">
+                <TextBox.InputBindings>
+                    <KeyBinding
+                        Key="Enter"
+                        Command="{Binding ExecuteCommand}"
+                        Modifiers="Control" />
+                    <KeyBinding
+                        Key="S"
+                        Command="{Binding SaveCommandCommand}"
+                        Modifiers="Control" />
+                </TextBox.InputBindings>
+            </TextBox>
+
+
+            <TextBlock
+                Margin="0,0,0,5"
+                FontWeight="Bold"
+                Foreground="White"
+                Text="Command Output" />
+            <TextBox
+                Height="200"
+                AcceptsReturn="True"
+                Background="#2E2E2E"
+                FontFamily="Consolas"
+                Foreground="LightGreen"
+                IsReadOnly="True"
+                Text="{Binding Result}"
+                TextWrapping="Wrap"
+                VerticalScrollBarVisibility="Auto" />
+        </StackPanel>
+
+    </Grid>
+</mah:MetroWindow>
