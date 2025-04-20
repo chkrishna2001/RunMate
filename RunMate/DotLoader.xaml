@@ -1,0 +1,182 @@
+﻿<UserControl
+    x:Class="RunMate.DotLoader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="320"
+    Height="50">
+
+    <!--  5 animated dots  -->
+    <!--  Repeat the Ellipse block 5 times, each with a different BeginTime (0s, 0.2s, etc.)  -->
+    <!--  COPY/PASTE FROM EARLIER: the entire set of 5 dots here exactly as-is  -->
+    <Canvas
+        Height="40"
+        HorizontalAlignment="Stretch"
+        Background="Transparent">
+        <!--  5 animated dots  -->
+        <Ellipse
+            Canvas.Top="15"
+            Width="10"
+            Height="10"
+            Fill="White">
+            <Ellipse.Triggers>
+                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0" Storyboard.TargetProperty="(Canvas.Left)">
+                                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:0.8" Value="80" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.3,0.0,0.8,1.0"
+                                    KeyTime="0:0:1.2"
+                                    Value="160" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.4,0.0,1,1"
+                                    KeyTime="0:0:1.6"
+                                    Value="300" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Ellipse.Triggers>
+        </Ellipse>
+
+        <Ellipse
+            Canvas.Top="15"
+            Width="10"
+            Height="10"
+            Fill="White">
+            <Ellipse.Triggers>
+                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.2" Storyboard.TargetProperty="(Canvas.Left)">
+                                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:0.8" Value="80" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.3,0.0,0.8,1.0"
+                                    KeyTime="0:0:1.2"
+                                    Value="160" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.4,0.0,1,1"
+                                    KeyTime="0:0:1.6"
+                                    Value="300" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.2" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Ellipse.Triggers>
+        </Ellipse>
+
+        <Ellipse
+            Canvas.Top="15"
+            Width="10"
+            Height="10"
+            Fill="White">
+            <Ellipse.Triggers>
+                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.4" Storyboard.TargetProperty="(Canvas.Left)">
+                                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:0.8" Value="80" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.3,0.0,0.8,1.0"
+                                    KeyTime="0:0:1.2"
+                                    Value="160" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.4,0.0,1,1"
+                                    KeyTime="0:0:1.6"
+                                    Value="300" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.4" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Ellipse.Triggers>
+        </Ellipse>
+
+        <Ellipse
+            Canvas.Top="15"
+            Width="10"
+            Height="10"
+            Fill="White">
+            <Ellipse.Triggers>
+                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.6" Storyboard.TargetProperty="(Canvas.Left)">
+                                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:0.8" Value="80" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.3,0.0,0.8,1.0"
+                                    KeyTime="0:0:1.2"
+                                    Value="160" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.4,0.0,1,1"
+                                    KeyTime="0:0:1.6"
+                                    Value="300" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.6" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Ellipse.Triggers>
+        </Ellipse>
+
+        <Ellipse
+            Canvas.Top="15"
+            Width="10"
+            Height="10"
+            Fill="White">
+            <Ellipse.Triggers>
+                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.8" Storyboard.TargetProperty="(Canvas.Left)">
+                                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:0.8" Value="80" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.3,0.0,0.8,1.0"
+                                    KeyTime="0:0:1.2"
+                                    Value="160" />
+                                <SplineDoubleKeyFrame
+                                    KeySpline="0.4,0.0,1,1"
+                                    KeyTime="0:0:1.6"
+                                    Value="300" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimationUsingKeyFrames BeginTime="0:0:0.8" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Ellipse.Triggers>
+        </Ellipse>
+    </Canvas>
+
+</UserControl>

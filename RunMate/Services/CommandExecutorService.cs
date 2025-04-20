@@ -4,20 +4,20 @@ namespace RunMate.Services
 {
     public static class CommandExecutorService
     {
-        public static string Execute(string command, string shellType)
+        public static async Task<string> Execute(string command, string shellType)
         {
             try
             {
                 switch (shellType.ToLower())
                 {
                     case "pwsh":
-                        return ExecuteShellCommand("pwsh", $"-NoProfile -Command \"{command}\"");
+                        return await ExecuteShellCommand("pwsh", $"-NoProfile -Command \"{command}\"");
                     case "powershell":
-                        return ExecuteShellCommand("powershell", $"-NoProfile -Command \"{command}\"");
+                        return await ExecuteShellCommand("powershell", $"-NoProfile -Command \"{command}\"");
                     case "cmd":
-                        return ExecuteShellCommand("cmd.exe", $"/C {command}");
+                        return await ExecuteShellCommand("cmd.exe", $"/C {command}");
                     case "bash":
-                        return ExecuteShellCommand("bash", $"-c \"{command}\"");
+                        return await ExecuteShellCommand("bash", $"-c \"{command}\"");
                     default:
                         return "Unsupported shell type.";
                 }
@@ -28,7 +28,7 @@ namespace RunMate.Services
             }
         }
 
-        private static string ExecuteShellCommand(string fileName, string arguments)
+        private static async Task<string> ExecuteShellCommand(string fileName, string arguments)
         {
             var psi = new ProcessStartInfo
             {
@@ -46,7 +46,7 @@ namespace RunMate.Services
             string output = process.StandardOutput.ReadToEnd();
             string error = process.StandardError.ReadToEnd();
 
-            process.WaitForExit();
+            await process.WaitForExitAsync();
 
             return string.IsNullOrWhiteSpace(error) ? output : $"Error:\n{error}";
         }

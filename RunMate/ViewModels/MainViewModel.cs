@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,7 +25,9 @@ namespace RunMate.ViewModels
                     var loaded = CommandRepositoryService.LoadCommands();
                     if (loaded != null)
                     {
-                        SavedCommands.Clear(); // 🔑 Important: clear instead of replacing
+                        AllCommands.Clear();
+                        AllCommands.AddRange(loaded);
+                        SavedCommands.Clear();
                         foreach (var cmd in loaded)
                             SavedCommands.Add(cmd);
                     }
@@ -50,19 +54,28 @@ namespace RunMate.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<CommandEntry> savedCommands;
+        [ObservableProperty]
+        private string selectedShell = "PowerShell";
+
+        private List<CommandEntry> AllCommands { get; } = new();
+
+        public ObservableCollection<string> AvailableShells { get; } =
+            new() { "PowerShell", "pwsh", "cmd", "bash" };
+
         partial void OnSearchTextChanged(string value)
         {
-            var commands = CommandRepositoryService.LoadCommands();
-            var filteredCommands = commands.Where(m => m.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).ToList();
-            SavedCommands.Clear();
-            foreach (var filteredCommand in filteredCommands)
-            {
-                SavedCommands.Add(filteredCommand);
-            }
+            var filtered = string.IsNullOrWhiteSpace(value)
+                ? AllCommands
+                : AllCommands.Where(c => c.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).ToList();
 
+            SavedCommands.Clear();
+            foreach (var cmd in filtered)
+                SavedCommands.Add(cmd);
         }
+
         partial void OnSelectedCommandChanged(CommandEntry value)
         {
+            SelectedShell = value.ShellType;
             Command = value.CommandText;
         }
 
@@ -141,8 +154,9 @@ namespace RunMate.ViewModels
             IsExecuting = true;
             try
             {
-                var shellType = SelectedCommand?.ShellType ?? "PowerShell";
-                Result = await Task.Run(() => CommandExecutorService.Execute(Command, shellType));
+                Result = "Running.....";
+                await Task.Delay(1);
+                Result = await CommandExecutorService.Execute(Command, SelectedShell);
             }
             finally
             {
@@ -170,14 +184,35 @@ namespace RunMate.ViewModels
             if (SelectedCommand != null)
             {
                 SelectedCommand.CommandText = Command;
+                SelectedCommand.ShellType = SelectedShell;
                 CommandRepositoryService.SaveCommands(SavedCommands);
             }
             else
             {
-                var newCmd = new CommandEntry { Name = "New Command", CommandText = "", ShellType = "PowerShell" };
+                var newCmd = new CommandEntry { Name = "New Command", CommandText = "", ShellType = SelectedShell };
                 SavedCommands.Add(newCmd);
                 SelectedCommand = newCmd;
             }
+        }
+        [RelayCommand]
+        private void CopyCommand()
+        {
+            if (string.IsNullOrWhiteSpace(Result))
+            {
+                return;
+            }
+            Clipboard.SetText(Result);
+        }
+        [RelayCommand]
+        private void SaveToFileCommand()
+        {
+            if (string.IsNullOrWhiteSpace(Result))
+            {
+                return;
+            }
+            var tempFilePath = $"{Path.GetTempFileName()}.txt";
+            File.WriteAllText(Path.Combine($"{Path.GetTempFileName()}.txt"), Result);
+            Clipboard.SetText(tempFilePath);
         }
     }
 }
