@@ -7,15 +7,33 @@ public class BoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is bool boolValue && boolValue)
-            return Visibility.Visible;
-        return Visibility.Collapsed;
+        var isVisible = false;
+        var reverse = false;
+
+        // Check if parameter requests reverse logic
+        if (parameter != null && string.Equals(parameter.ToString(), "reverse", StringComparison.OrdinalIgnoreCase))
+        {
+            reverse = true;
+        }
+
+        // Handle boolean value
+        if (value is bool boolValue)
+        {
+            isVisible = reverse ? !boolValue : boolValue;
+        }
+
+        return isVisible ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is Visibility visibilityValue && visibilityValue == Visibility.Visible)
-            return true;
+        if (value is Visibility visibility)
+        {
+            var reverse = parameter?.ToString()?.Equals("reverse", StringComparison.OrdinalIgnoreCase) ?? false;
+            return reverse ?
+                (visibility != Visibility.Visible) :
+                (visibility == Visibility.Visible);
+        }
         return false;
     }
 }

@@ -1,25 +1,49 @@
-﻿using LiteDB;
+﻿using System.Collections.ObjectModel;
+using LiteDB;
+using RunMate.Helpers;
 using RunMate.Models;
 
 namespace RunMate.Services
 {
-    public static class CommandRepositoryService
+    public static class CommandRepositoryLiteDbService
     {
-        private static readonly string DbPath = "commands.db";
+        private const string DatabasePath = "RunMate.db";
 
-        public static List<CommandEntry> LoadCommands()
+        public static void SaveTree(IEnumerable<TreeNode> rootNodes)
         {
-            using var db = new LiteDatabase(DbPath);
-            var col = db.GetCollection<CommandEntry>("commands");
-            return col.Query().ToList();
+            using var db = new LiteDatabase(DatabasePath);
+            var col = db.GetCollection<ShellGroupEntity>("shell_groups");
+
+            col.DeleteAll();
+
+            foreach (var rootNode in rootNodes)
+            {
+                var shellGroup = new ShellGroupEntity
+                {
+                    ShellType = rootNode.Name,
+                    Children = rootNode.Children?.Select(TreeNodeMapper.MapToEntity).ToList() ?? new List<TreeNodeEntity>()
+                };
+
+                col.Upsert(shellGroup);
+            }
         }
 
-        public static void SaveCommands(IEnumerable<CommandEntry> commands)
+        public static List<TreeNode> LoadTree()
         {
-            using var db = new LiteDatabase(DbPath);
-            var col = db.GetCollection<CommandEntry>("commands");
-            col.DeleteAll();
-            col.InsertBulk(commands);
+            using var db = new LiteDatabase(DatabasePath);
+            var col = db.GetCollection<ShellGroupEntity>("shell_groups");
+
+            var shellGroups = col.FindAll();
+
+            return shellGroups.Select(group => new TreeNode
+            {
+                Name = group.ShellType,
+                OriginalName = group.ShellType,
+                ShellType = group.ShellType,
+                IsCommand = false,
+                CommandText = null,
+                Children = new ObservableCollection<TreeNode>(group.Children?.Select(TreeNodeMapper.MapToModel) ?? Enumerable.Empty<TreeNode>())
+            }).ToList();
         }
     }
 }

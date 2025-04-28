@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using RunMate.Models;
@@ -23,6 +24,18 @@ namespace RunMate
         private void MainWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
             WeakReferenceMessenger.Default.Send<WindowLoadedMessage>();
+        }
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue is TreeNode selectedNode && selectedNode.IsCommand)
+            {
+                if (DataContext is MainViewModel vm)
+                {
+                    vm.SelectedCommand = selectedNode;
+                    vm.Command = selectedNode.CommandText;
+                    vm.SelectedShell = selectedNode.ShellType; // (optional if you want to auto-select Shell too)
+                }
+            }
         }
     }
 }

@@ -8,7 +8,9 @@
     xmlns:helpers="clr-namespace:RunMate.Helpers"
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:models="clr-namespace:RunMate.Models"
     xmlns:vm="clr-namespace:RunMate.ViewModels"
+    x:Name="MainAppWindow"
     Title="RunMate - Command Center"
     Width="900"
     Height="600"
@@ -39,107 +41,116 @@
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
             <!--  📋 Command Grid  -->
-            <DataGrid
-                x:Name="CommandGrid"
-                AutoGenerateColumns="False"
+
+            <TreeView
+                Margin="10"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                AllowDrop="True"
                 Background="#2D2D30"
-                BorderBrush="Transparent"
-                CanUserAddRows="False"
-                CanUserResizeRows="False"
-                EnableRowVirtualization="True"
+                BorderBrush="Gray"
                 Foreground="White"
-                GridLinesVisibility="None"
-                HeadersVisibility="None"
-                IsReadOnly="True"
                 ItemsSource="{Binding SavedCommands}"
-                RowHeaderWidth="0"
-                RowHeight="40"
-                SelectedItem="{Binding SelectedCommand}"
-                SelectionMode="Single">
+                SelectedItemChanged="TreeView_SelectedItemChanged">
+                <TreeView.Resources>
 
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Width="*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <DockPanel Margin="5,0" LastChildFill="True">
-                                    <!--  🗑️ Delete Icon  -->
-                                    <Button
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Command="{Binding DataContext.DeleteCommandCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
-                                        CommandParameter="{Binding}"
-                                        DockPanel.Dock="Right"
-                                        ToolTip="Delete">
-                                        <iconPacks:PackIconMaterial
-                                            Width="18"
-                                            Height="18"
-                                            Foreground="Red"
-                                            Kind="TrashCanOutline" />
-                                    </Button>
+                    <ContextMenu x:Key="NodeContextMenu">
+                        <MenuItem
+                            Command="{Binding DataContext.AddGroupCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                            CommandParameter="{Binding}"
+                            Header="Add Group" />
+                        <MenuItem
+                            Command="{Binding DataContext.AddCmdCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                            CommandParameter="{Binding}"
+                            Header="Add Command" />
+                        <MenuItem
+                            Command="{Binding DataContext.EnableRenameCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                            CommandParameter="{Binding}"
+                            Header="Rename" />
+                        <MenuItem
+                            Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                            CommandParameter="{Binding}"
+                            Header="Move Up" />
+                        <MenuItem
+                            Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                            CommandParameter="{Binding}"
+                            Header="Move Down" />
+                        <MenuItem
+                            Command="{Binding DataContext.DeleteNodeCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                            CommandParameter="{Binding}"
+                            Header="Delete" />
+                    </ContextMenu>
 
-                                    <!--  ✏️ Pencil Icon  -->
-                                    <Button
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Command="{Binding DataContext.EnableRenameCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
-                                        CommandParameter="{Binding}"
-                                        DockPanel.Dock="Right"
-                                        ToolTip="Rename">
-                                        <iconPacks:PackIconMaterial
-                                            Width="18"
-                                            Height="18"
-                                            Foreground="White"
-                                            Kind="Pencil" />
-                                    </Button>
+                    <!--  Renaming Template  -->
+                    <DataTemplate x:Key="RenamableNodeTemplate" DataType="{x:Type models:TreeNode}">
+                        <Border
+                            x:Name="SelectionBorder"
+                            Margin="2"
+                            Padding="4"
+                            Background="Transparent"
+                            CornerRadius="4">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Background" Value="#FF6600" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                                            <Setter Property="Background" Value="Transparent" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <DockPanel LastChildFill="True">
+                                <TextBlock
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="{Binding Name}"
+                                    Visibility="{Binding IsRenaming, Converter={StaticResource btov}, ConverterParameter=Reverse}" />
+                                <TextBox
+                                    Width="150"
+                                    Margin="0,-1,0,0"
+                                    VerticalAlignment="Center"
+                                    Tag="{Binding RelativeSource={RelativeSource Self}}"
+                                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                    Visibility="{Binding IsRenaming, Converter={StaticResource btov}}">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding
+                                            Key="Enter"
+                                            Command="{Binding DataContext.CommitRenameCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                                            CommandParameter="{Binding}" />
+                                        <KeyBinding
+                                            Key="Escape"
+                                            Command="{Binding DataContext.CancelRenameCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}"
+                                            CommandParameter="{Binding}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </TreeView.Resources>
 
-                                    <!--  Label / Editable Name  -->
-                                    <ContentControl Content="{Binding}">
-                                        <ContentControl.Style>
-                                            <Style TargetType="ContentControl">
-                                                <Setter Property="ContentTemplate">
-                                                    <Setter.Value>
-                                                        <DataTemplate>
-                                                            <TextBlock
-                                                                VerticalAlignment="Center"
-                                                                Foreground="White"
-                                                                Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsEditing}" Value="True">
-                                                        <Setter Property="ContentTemplate">
-                                                            <Setter.Value>
-                                                                <DataTemplate>
-                                                                    <TextBox
-                                                                        Width="200"
-                                                                        VerticalContentAlignment="Center"
-                                                                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                                                        <TextBox.InputBindings>
-                                                                            <KeyBinding
-                                                                                Key="Enter"
-                                                                                Command="{Binding DataContext.CommitRenameCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
-                                                                                CommandParameter="{Binding}" />
-                                                                            <KeyBinding
-                                                                                Key="Escape"
-                                                                                Command="{Binding DataContext.CancelRenameCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
-                                                                                CommandParameter="{Binding}" />
-                                                                        </TextBox.InputBindings>
-                                                                    </TextBox>
-                                                                </DataTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ContentControl.Style>
-                                    </ContentControl>
-                                </DockPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="ContextMenu" Value="{StaticResource NodeContextMenu}" />
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+
+                    </Style>
+                </TreeView.ItemContainerStyle>
+
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemTemplate="{StaticResource RenamableNodeTemplate}" ItemsSource="{Binding Children}">
+                        <DockPanel>
+                            <ContentControl Content="{Binding}" ContentTemplate="{StaticResource RenamableNodeTemplate}" />
+                        </DockPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
 
         </StackPanel>
 
@@ -147,99 +158,180 @@
         <!--  Command Panel  -->
         <Grid Grid.Column="1" Background="#1E1E1E">
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="6*" />
+                <RowDefinition Height="3*" />
+                <!--  Command input section: 30%  -->
+                <RowDefinition Height="5*" />
+                <!--  Command output section: 70%  -->
             </Grid.RowDefinitions>
-            <StackPanel
-                Grid.Row="0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <TextBlock
-                    Margin="0,0,10,0"
-                    VerticalAlignment="Center"
-                    Foreground="White"
-                    Text="Shell:" />
-                <ComboBox
-                    Width="150"
-                    Height="50"
-                    VerticalAlignment="Center"
-                    Background="#2E2E2E"
-                    FontWeight="Bold"
-                    Foreground="White"
-                    ItemsSource="{Binding AvailableShells}"
-                    SelectedItem="{Binding SelectedShell, Mode=TwoWay}" />
-            </StackPanel>
 
-            <TextBox
-                Grid.Row="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                AcceptsReturn="True"
-                Background="#2E2E2E"
-                FontFamily="Consolas"
-                Foreground="White"
-                Text="{Binding Command, UpdateSourceTrigger=PropertyChanged}"
-                TextWrapping="Wrap"
-                VerticalScrollBarVisibility="Auto">
-                <TextBox.InputBindings>
-                    <KeyBinding
-                        Key="Enter"
+            <!--  🖊️ COMMAND INPUT PANEL (Top 30%)  -->
+            <Grid Grid.Row="0" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!--  ShellType dropdown  -->
+                    <RowDefinition Height="*" />
+                    <!--  Command TextBox  -->
+                    <RowDefinition Height="Auto" />
+                    <!--  Execute button  -->
+                </Grid.RowDefinitions>
+
+                <!--  ShellType Dropdown  -->
+                <StackPanel
+                    Grid.Row="0"
+                    Margin="0,0,0,5"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Foreground="White"
+                        Text="Shell:" />
+                    <ComboBox
+                        Width="150"
+                        Height="30"
+                        Background="#2E2E2E"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        ItemsSource="{Binding AvailableShells}"
+                        SelectedItem="{Binding SelectedShell, Mode=TwoWay}" />
+                </StackPanel>
+
+                <!--  Command Input TextBox + DotLoader  -->
+                <Grid Grid.Row="1">
+                    <TextBox
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        AcceptsReturn="True"
+                        Background="#2E2E2E"
+                        FontFamily="Consolas"
+                        Foreground="White"
+                        Text="{Binding Command, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto">
+                        <TextBox.InputBindings>
+                            <KeyBinding
+                                Key="Enter"
+                                Command="{Binding ExecuteCommand}"
+                                Modifiers="Control" />
+                            <KeyBinding
+                                Key="S"
+                                Command="{Binding SaveCommand}"
+                                Modifiers="Control" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+
+                    <controls:DotLoader
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        Visibility="{Binding IsExecuting, Converter={StaticResource btov}}" />
+                </Grid>
+
+                <!--  Execute Button  -->
+                <StackPanel
+                    Grid.Row="2"
+                    Margin="0,5,0,0"
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal">
+                    <Button
+                        Width="24"
+                        Height="24"
+                        Margin="0"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0"
                         Command="{Binding ExecuteCommand}"
-                        Modifiers="Control" />
-                    <KeyBinding
-                        Key="S"
-                        Command="{Binding SaveCommandCommand}"
-                        Modifiers="Control" />
-                </TextBox.InputBindings>
-            </TextBox>
-            <controls:DotLoader
-                Grid.Row="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Bottom"
-                Visibility="{Binding IsExecuting, Converter={StaticResource btov}}" />
-            <StackPanel
-                Grid.Row="2"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
-                <Button
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Command="{Binding CopyCommand}"
-                    ToolTip="Copy">
-                    <iconPacks:PackIconMaterial
-                        Width="18"
-                        Height="18"
-                        Foreground="White"
-                        Kind="ContentCopy" />
-                </Button>
-                <Button
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Command="{Binding SaveToFileCommand}"
-                    ToolTip="Save">
-                    <iconPacks:PackIconMaterial
-                        Width="18"
-                        Height="18"
-                        Foreground="White"
-                        Kind="Floppy" />
-                </Button>
-            </StackPanel>
-            <TextBox
-                Grid.Row="3"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                AcceptsReturn="True"
-                Background="#2E2E2E"
-                FontFamily="Consolas"
-                Foreground="LightGreen"
-                IsReadOnly="True"
-                Text="{Binding Result}"
-                TextWrapping="Wrap"
-                VerticalScrollBarVisibility="Auto" />
+                        FocusVisualStyle="{x:Null}"
+                        ToolTip="Execute">
+                        <iconPacks:PackIconMaterial
+                            Width="18"
+                            Height="18"
+                            Foreground="White"
+                            Kind="FastForward" />
+                    </Button>
+                    <Button
+                        Width="24"
+                        Height="24"
+                        Margin="0"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding SaveCommand}"
+                        FocusVisualStyle="{x:Null}"
+                        ToolTip="Execute">
+                        <iconPacks:PackIconMaterial
+                            Width="18"
+                            Height="18"
+                            Foreground="White"
+                            Kind="Floppy" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!--  🖥️ COMMAND OUTPUT PANEL (Bottom 70%)  -->
+            <Grid Grid.Row="1" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!--  Copy/Save Buttons  -->
+                    <RowDefinition Height="*" />
+                    <!--  Result TextBox  -->
+                </Grid.RowDefinitions>
+
+                <!--  Copy + Save Buttons  -->
+                <StackPanel
+                    Grid.Row="0"
+                    Margin="0,0,0,5"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                    <Button
+                        Width="24"
+                        Height="24"
+                        Margin="0"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding CopyCommand}"
+                        FocusVisualStyle="{x:Null}"
+                        ToolTip="Copy">
+                        <iconPacks:PackIconMaterial
+                            Width="18"
+                            Height="18"
+                            Foreground="White"
+                            Kind="ContentCopy" />
+                    </Button>
+                    <Button
+                        Width="24"
+                        Height="24"
+                        Margin="5,0,0,0"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding SaveToFileCommand}"
+                        FocusVisualStyle="{x:Null}"
+                        ToolTip="Save to file">
+                        <iconPacks:PackIconMaterial
+                            Width="18"
+                            Height="18"
+                            Foreground="White"
+                            Kind="Download" />
+                    </Button>
+                </StackPanel>
+
+                <!--  Command Output TextBox  -->
+                <TextBox
+                    Grid.Row="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    AcceptsReturn="True"
+                    Background="#2E2E2E"
+                    FontFamily="Consolas"
+                    Foreground="LightGreen"
+                    IsReadOnly="True"
+                    Text="{Binding Result}"
+                    TextWrapping="Wrap"
+                    VerticalScrollBarVisibility="Auto" />
+            </Grid>
         </Grid>
+
 
 
     </Grid>
